@@ -1,6 +1,7 @@
 const wa = require('@open-wa/wa-automate');
 const axios = require('axios');
 const whisper = require('whisper-node');
+const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -52,7 +53,17 @@ function start(client) {
         const mediaData = await client.decryptMedia(message);
         const audioFile = `${tempDir}/${message.from}_${message.id}.ogg`;
         fs.writeFileSync(audioFile, mediaData, 'base64');
+        try {
         const audioText = await convertAudioToText(audioFile);
+        // Add the converted text and timestamp to the user messages array
+        userMessages.push({
+          text: audioText,
+          timestamp: new Date().toISOString()
+        });
+      } catch (conversionError) {
+        console.error('Error processing audio message:', conversionError);
+        await client.sendText(message.from, 'Desculpe, ocorreu um erro ao converter sua mensagem de áudio.');
+      }
         // Add the converted text and timestamp to the user messages array
         userMessages.push({
           text: audioText,
@@ -116,14 +127,28 @@ const FormData = require('form-data');
 const fs = require('fs');
 
 async function convertAudioToText(audioFilePath) {
-  // Ensure the file is a .wav with a sample rate of 16kHz
-  const wavFilePath = audioFilePath.replace(/\.\w+$/, '.wav');
-  if (path.extname(audioFilePath) !== '.wav') {
-    // Convert to .wav format using ffmpeg or another method
-    // This is a placeholder for the conversion process
-    // You will need to implement the actual conversion
-    console.log(`Converting ${audioFilePath} to ${wavFilePath} at 16kHz`);
-  }
+  return new Promise((resolve, reject) => {
+    const wavFilePath = audioFilePath.replace(/\.\w+$/, '.wav');
+    // Convert to .wav format using ffmpeg
+    exec(`ffmpeg -i ${audioFilePath} -ar 16000 ${wavFilePath}`, async (error) => {
+      if (error) {
+        console.error('Error converting audio file:', error);
+        return reject(error);
+      }
+      // Transcribe the audio file using whisper-node
+      try {
+        const transcript = await whisper(wavFilePath);
+        // Concatenate the speech segments into a single string
+        const transcribedText = transcript.map(segment => segment.speech).join(' ');
+        fs.unlinkSync(wavFilePath); // Clean up the temporary .wav file
+        resolve(transcribedText);
+      } catch (transcriptionError) {
+        console.error('Error transcribing audio file:', transcriptionError);
+        reject(transcriptionError);
+      }
+    });
+  });
+}
 
   // Transcribe the audio file using whisper-node
   const transcript = await whisper(wavFilePath);
