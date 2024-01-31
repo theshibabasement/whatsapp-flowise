@@ -1,8 +1,8 @@
 const wa = require('@open-wa/wa-automate');
 const axios = require('axios');
-const openai = require('openai');
-
-openai.apiKey = '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';
+const whisper = require('whisper-node');
+const fs = require('fs');
+const path = require('path');
 
 let userMessages = [];
 let timer = null;
@@ -115,19 +115,19 @@ function isNumberWhitelisted(number) {
 const FormData = require('form-data');
 const fs = require('fs');
 
-async function convertAudioToText(audioFile) {
-  // Use OpenAI's Whisper model to convert audio to text
-  const form = new FormData();
-  form.append('file', fs.createReadStream(audioFile));
-  form.append('model', 'whisper-1');
+async function convertAudioToText(audioFilePath) {
+  // Ensure the file is a .wav with a sample rate of 16kHz
+  const wavFilePath = audioFilePath.replace(/\.\w+$/, '.wav');
+  if (path.extname(audioFilePath) !== '.wav') {
+    // Convert to .wav format using ffmpeg or another method
+    // This is a placeholder for the conversion process
+    // You will need to implement the actual conversion
+    console.log(`Converting ${audioFilePath} to ${wavFilePath} at 16kHz`);
+  }
 
-  const response = await axios.post('https://api.openai.com/v1/audio/transcriptions', form, {
-    headers: {
-      'Authorization': `Bearer ${openai.apiKey}`,
-      ...form.getHeaders()
-    }
-  });
-
-  // By default, the response type will be json with the raw text included.
-  return response.data.text;
+  // Transcribe the audio file using whisper-node
+  const transcript = await whisper(wavFilePath);
+  // Concatenate the speech segments into a single string
+  const transcribedText = transcript.map(segment => segment.speech).join(' ');
+  return transcribedText;
 }
