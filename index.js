@@ -3,7 +3,7 @@ const axios = require('axios');
 
 let userMessages = [];
 let timer = null;
-const waitTime = 45000; // 45 seconds
+const waitTime = 30000; // 45 seconds
 
 // Números permitidos na lista branca (no formato 5511993589393@c.us)
 const whitelistedNumbers = [
