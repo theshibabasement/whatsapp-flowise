@@ -8,7 +8,9 @@ let timer = null;
 const whitelistedNumbers = [
   '551234567890@c.us',
   '551111111111@c.us',
-  '5511912345678@c.us' // Adicione seu número aqui
+  '5511912345678@c.us',
+  '555499000753@c.us',
+  '555484162912@c.us' // Adicione seu número aqui
 ];
 
 wa.create({
@@ -34,24 +36,16 @@ function start(client) {
     if (isNumberWhitelisted(message.from)) {
       console.log('Número autorizado.');
 
-      // Add the user's message to the messages array
-      userMessages.push(message.body);
-
-      // Clear the existing timer
-      clearTimeout(timer);
-
-      // Start a new timer
-      timer = setTimeout(async () => {
-        // Join the user's messages into a single string
-        const question = userMessages.join(' ');
-
-        // Clear the user's messages
-        userMessages = [];
-
-        const token = 'pOZiOWTf4aDiBD2PinQyX9nEjXstIPeGecqUx2onR/E='; // Substitua pelo seu token de autorização
+      if (message.body === 'oi') {
+        await client.sendText(message.from, '👋 Olá!');
+        console.log('Resposta enviada: 👋 Olá!');
+      } else {
+        // Enviar a pergunta para o endpoint da API
+        const question = message.body;
+        const token = 'MJ+Q8mSqeUoonDU8MSnMSi/J3M2JVsAjqv7jBArgjvA='; // Substitua pelo seu token de autorização
 
         try {
-          const response = await axios.post('http://192.168.15.8:3000/api/v1/prediction/2f3522c3-1e9f-4f2e-a411-f34303e98cd2', {
+          const response = await axios.post('https://flow.limemarketing.online/api/v1/prediction/8e79869b-4b12-43e0-a13b-1c98c54c83d8', {
             question: question
           }, {
             headers: {
@@ -68,7 +62,7 @@ function start(client) {
           await client.sendText(message.from, 'Desculpe, ocorreu um erro ao processar sua pergunta.');
           console.log('Resposta de erro enviada: Desculpe, ocorreu um erro ao processar sua pergunta.');
         }
-      }, 30000); // 30 seconds
+      }
     } else {
       console.log('Número não autorizado.');
       await client.sendText(message.from, 'Desculpe, você não está autorizado a interagir com este chatbot.');
