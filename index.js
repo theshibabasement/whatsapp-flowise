@@ -106,7 +106,7 @@ const FormData = require('form-data');
 const fs = require('fs');
 
 async function convertAudioToText(audioFile) {
-  // Use Whisper ASR from OpenAI to convert audio to text
+  // Use OpenAI's Whisper model to convert audio to text
   const form = new FormData();
   form.append('file', fs.createReadStream(audioFile));
   form.append('model', 'whisper-1');
@@ -118,5 +118,6 @@ async function convertAudioToText(audioFile) {
     }
   });
 
+  // By default, the response type will be json with the raw text included.
   return response.data.text;
 }
