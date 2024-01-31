@@ -1,6 +1,9 @@
 const wa = require('@open-wa/wa-automate');
 const axios = require('axios');
 
+let userMessages = [];
+let timer = null;
+
 // Números permitidos na lista branca (no formato 5511993589393@c.us)
 const whitelistedNumbers = [
   '551234567890@c.us',
@@ -31,12 +34,20 @@ function start(client) {
     if (isNumberWhitelisted(message.from)) {
       console.log('Número autorizado.');
 
-      if (message.body === 'Hi') {
-        await client.sendText(message.from, '👋 Olá!');
-        console.log('Resposta enviada: 👋 Olá!');
-      } else {
-        // Enviar a pergunta para o endpoint da API
-        const question = message.body;
+      // Add the user's message to the messages array
+      userMessages.push(message.body);
+
+      // Clear the existing timer
+      clearTimeout(timer);
+
+      // Start a new timer
+      timer = setTimeout(async () => {
+        // Join the user's messages into a single string
+        const question = userMessages.join(' ');
+
+        // Clear the user's messages
+        userMessages = [];
+
         const token = 'pOZiOWTf4aDiBD2PinQyX9nEjXstIPeGecqUx2onR/E='; // Substitua pelo seu token de autorização
 
         try {
@@ -57,7 +68,7 @@ function start(client) {
           await client.sendText(message.from, 'Desculpe, ocorreu um erro ao processar sua pergunta.');
           console.log('Resposta de erro enviada: Desculpe, ocorreu um erro ao processar sua pergunta.');
         }
-      }
+      }, 30000); // 30 seconds
     } else {
       console.log('Número não autorizado.');
       await client.sendText(message.from, 'Desculpe, você não está autorizado a interagir com este chatbot.');
