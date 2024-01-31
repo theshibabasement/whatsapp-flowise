@@ -3,6 +3,7 @@ const axios = require('axios');
 
 let userMessages = [];
 let timer = null;
+const waitTime = 45000; // 45 seconds
 
 // Números permitidos na lista branca (no formato 5511993589393@c.us)
 const whitelistedNumbers = [
@@ -36,17 +37,25 @@ function start(client) {
     if (isNumberWhitelisted(message.from)) {
       console.log('Número autorizado.');
 
-      if (message.body === 'oi') {
-        await client.sendText(message.from, '👋 Olá!');
-        console.log('Resposta enviada: 👋 Olá!');
-      } else {
-        // Enviar a pergunta para o endpoint da API
-        const question = message.body;
+      // Adicionar a mensagem e a timestamp ao array de mensagens do usuário
+      userMessages.push({
+        text: message.body,
+        timestamp: new Date().toISOString()
+      });
+
+      // Limpar o timer existente
+      if (timer) {
+        clearTimeout(timer);
+      }
+
+      // Iniciar um novo timer
+      timer = setTimeout(async () => {
+        // Enviar todas as mensagens do usuário para o endpoint da API
         const token = 'MJ+Q8mSqeUoonDU8MSnMSi/J3M2JVsAjqv7jBArgjvA='; // Substitua pelo seu token de autorização
 
         try {
           const response = await axios.post('https://flow.limemarketing.online/api/v1/prediction/8e79869b-4b12-43e0-a13b-1c98c54c83d8', {
-            question: question
+            question: userMessages.map(message => `${message.timestamp} - ${message.text}`).join('\n')
           }, {
             headers: {
               Authorization: `Bearer ${token}`
@@ -57,12 +66,15 @@ function start(client) {
 
           await client.sendText(message.from, answer);
           console.log('Resposta enviada:', answer);
+
+          // Limpar as mensagens do usuário
+          userMessages = [];
         } catch (error) {
           console.error('Erro na solicitação à API:', error);
           await client.sendText(message.from, 'Desculpe, ocorreu um erro ao processar sua pergunta.');
           console.log('Resposta de erro enviada: Desculpe, ocorreu um erro ao processar sua pergunta.');
         }
-      }
+      }, waitTime);
     } else {
       console.log('Número não autorizado.');
       await client.sendText(message.from, 'Desculpe, você não está autorizado a interagir com este chatbot.');
