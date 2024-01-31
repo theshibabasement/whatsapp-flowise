@@ -53,7 +53,7 @@ function start(client) {
             }
           });
 
-          const answer = response.data; // Obter a resposta da API
+          const answer = response.data.text; // Obter a resposta da API
 
           await client.sendText(message.from, answer);
           console.log('Resposta enviada:', answer);
