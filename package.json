@@ -10,9 +10,9 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-      "@open-wa/wa-automate": "^1.12.1",
-      "axios": "^0.24.0",
-      "better-sqlite3": "^7.5.0"
+      "@open-wa/wa-automate": "^4.67.0",
+      "axios": "^1.6.7",
+      "better-sqlite3": "^9.3.0"
     }
   }
   
