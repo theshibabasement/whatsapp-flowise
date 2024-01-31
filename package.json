@@ -14,7 +14,8 @@
       "axios": "^1.6.7",
       "better-sqlite3": "^9.3.0",
       "openai": "^4.8.0",
-      "form-data": "^4.0.0",
+      "form-data": "^4.0.0", 
+    "ffmpeg-static": "^4.4.0",
       "whisper-node": "^1.0.0"
       "form-data": "^4.0.0"
     }
