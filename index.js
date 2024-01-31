@@ -136,11 +136,6 @@ function isNumberWhitelisted(number) {
   return whitelistedNumbers.some(whitelistedNumber => whitelistedNumber === number);
 }
 
-const FormData = require('form-data');
-const fs = require('fs');
-
-// Function to convert .ogg audio file to .wav using ffmpeg
-function convertOggToWav(oggFilePath, wavFilePath) {
   return new Promise((resolve, reject) => {
     exec(`ffmpeg -i ${oggFilePath} -ar 16000 -ac 1 ${wavFilePath}`, (error, stdout, stderr) => {
       if (error) {
