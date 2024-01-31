@@ -102,13 +102,21 @@ function isNumberWhitelisted(number) {
   return whitelistedNumbers.some(whitelistedNumber => whitelistedNumber === number);
 }
 
+const FormData = require('form-data');
+const fs = require('fs');
+
 async function convertAudioToText(audioFile) {
   // Use Whisper ASR from OpenAI to convert audio to text
-  const response = await openai.Whisper().asr({
-    audio: {
-      data: audioFile
+  const form = new FormData();
+  form.append('file', fs.createReadStream(audioFile));
+  form.append('model', 'whisper-1');
+
+  const response = await axios.post('https://api.openai.com/v1/audio/transcriptions', form, {
+    headers: {
+      'Authorization': `Bearer ${openai.apiKey}`,
+      ...form.getHeaders()
     }
   });
 
-  return response.text;
+  return response.data.text;
 }
