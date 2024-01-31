@@ -1,5 +1,6 @@
 const wa = require('@open-wa/wa-automate');
 const axios = require('axios');
+const openai = require('openai');
 
 let userMessages = [];
 let timer = null;
@@ -37,11 +38,22 @@ function start(client) {
     if (isNumberWhitelisted(message.from)) {
       console.log('Número autorizado.');
 
-      // Adicionar a mensagem e a timestamp ao array de mensagens do usuário
-      userMessages.push({
-        text: message.body,
-        timestamp: new Date().toISOString()
-      });
+      // Check if the message is audio
+      if (message.type === 'audio') {
+        // Convert the audio to text
+        const audioText = await convertAudioToText(message.body);
+        // Add the converted text and timestamp to the user messages array
+        userMessages.push({
+          text: audioText,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        // Add the message and timestamp to the user messages array
+        userMessages.push({
+          text: message.body,
+          timestamp: new Date().toISOString()
+        });
+      }
 
       // Limpar o timer existente
       if (timer) {
@@ -86,4 +98,15 @@ function start(client) {
 function isNumberWhitelisted(number) {
   // Verificar se o número está presente na lista branca
   return whitelistedNumbers.some(whitelistedNumber => whitelistedNumber === number);
+}
+
+async function convertAudioToText(audioFile) {
+  // Use Whisper ASR from OpenAI to convert audio to text
+  const response = await openai.Whisper().asr({
+    audio: {
+      data: audioFile
+    }
+  });
+
+  return response.text;
 }
