@@ -41,9 +41,10 @@ function start(client) {
       console.log('Número autorizado.');
 
       // Check if the message is audio
-      if (message.type === 'audio') {
+      if (message.mimetype && message.mimetype.startsWith('audio/')) {
         // Convert the audio to text
-        const audioText = await convertAudioToText(message.body);
+        const audioFile = await client.downloadMedia(message);
+        const audioText = await convertAudioToText(audioFile);
         // Add the converted text and timestamp to the user messages array
         userMessages.push({
           text: audioText,
