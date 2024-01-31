@@ -2,6 +2,8 @@ const wa = require('@open-wa/wa-automate');
 const axios = require('axios');
 const openai = require('openai');
 
+openai.apiKey = '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';
+
 let userMessages = [];
 let timer = null;
 const waitTime = 30000; // 45 seconds
