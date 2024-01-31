@@ -43,13 +43,16 @@ function start(client) {
       // Check if the message is audio
       if (message.mimetype && message.mimetype.startsWith('audio/')) {
         // Convert the audio to text
-        const audioFile = await client.downloadMedia(message);
+        const mediaData = await client.decryptMedia(message);
+        const audioFile = `./temp/${message.from}_${message.id}.mp3`;
+        fs.writeFileSync(audioFile, mediaData, 'base64');
         const audioText = await convertAudioToText(audioFile);
         // Add the converted text and timestamp to the user messages array
         userMessages.push({
           text: audioText,
           timestamp: new Date().toISOString()
         });
+        fs.unlinkSync(audioFile); // Clean up the temporary audio file
       } else {
         // Add the message and timestamp to the user messages array
         userMessages.push({
