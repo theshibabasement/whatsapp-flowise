@@ -30,6 +30,8 @@ wa.create({
   qrTimeout: 0,
 }).then(client => start(client));
 
+const tempDir = './temp';
+
 function start(client) {
   // Evento de recebimento de mensagem
   client.onMessage(async message => {
@@ -40,11 +42,15 @@ function start(client) {
     if (isNumberWhitelisted(message.from)) {
       console.log('Número autorizado.');
 
+      // Ensure the temp directory exists
+      if (!fs.existsSync(tempDir)){
+        fs.mkdirSync(tempDir);
+      }
       // Check if the message is audio
       if (message.mimetype && message.mimetype.startsWith('audio/')) {
         // Convert the audio to text
         const mediaData = await client.decryptMedia(message);
-        const audioFile = `./temp/${message.from}_${message.id}.mp3`;
+        const audioFile = `${tempDir}/${message.from}_${message.id}.ogg`;
         fs.writeFileSync(audioFile, mediaData, 'base64');
         const audioText = await convertAudioToText(audioFile);
         // Add the converted text and timestamp to the user messages array
