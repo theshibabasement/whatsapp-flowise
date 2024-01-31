@@ -6,7 +6,7 @@ openai.apiKey = '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';
 
 let userMessages = [];
 let timer = null;
-const waitTime = 30000; // 45 seconds
+const waitTime = 1000; // 45 seconds
 
 // Números permitidos na lista branca (no formato 5511993589393@c.us)
 const whitelistedNumbers = [
