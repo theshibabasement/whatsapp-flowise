@@ -12,7 +12,8 @@
     "dependencies": {
       "@open-wa/wa-automate": "^4.67.0",
       "axios": "^1.6.7",
-      "better-sqlite3": "^9.3.0"
+      "better-sqlite3": "^9.3.0",
+      "openai": "^0.27.0"
     }
   }
   
