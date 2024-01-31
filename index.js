@@ -54,12 +54,7 @@ function start(client) {
         const audioFile = `${tempDir}/${message.from}_${message.id}.ogg`;
         fs.writeFileSync(audioFile, mediaData, 'base64');
         try {
-        const audioText = await convertAudioToText(audioFile);
-        // Add the converted text and timestamp to the user messages array
-        userMessages.push({
-          text: audioText,
-          timestamp: new Date().toISOString()
-        });
+        const audioText = await convertAudioToText(audioFile); // This function now handles .ogg to .wav conversion
       } catch (conversionError) {
         console.error('Error processing audio message:', conversionError);
         await client.sendText(message.from, 'Desculpe, ocorreu um erro ao converter sua mensagem de áudio.');
@@ -118,6 +113,24 @@ function start(client) {
   });
 }
 
+// Function to send text to Flowise and receive a response
+async function sendTextToFlowise(text, recipient) {
+  const token = 'MJ+Q8mSqeUoonDU8MSnMSi/J3M2JVsAjqv7jBArgjvA='; // Replace with your actual authorization token
+  try {
+    const response = await axios.post('https://flow.limemarketing.online/api/v1/prediction/8e79869b-4b12-43e0-a13b-1c98c54c83d8', {
+      question: text
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return response.data.text; // Return the response text from Flowise
+  } catch (error) {
+    console.error('Error sending text to Flowise:', error);
+    return 'Desculpe, ocorreu um erro ao processar sua mensagem.';
+  }
+}
+
 function isNumberWhitelisted(number) {
   // Verificar se o número está presente na lista branca
   return whitelistedNumbers.some(whitelistedNumber => whitelistedNumber === number);
@@ -126,11 +139,24 @@ function isNumberWhitelisted(number) {
 const FormData = require('form-data');
 const fs = require('fs');
 
+// Function to convert .ogg audio file to .wav using ffmpeg
+function convertOggToWav(oggFilePath, wavFilePath) {
+  return new Promise((resolve, reject) => {
+    exec(`ffmpeg -i ${oggFilePath} -ar 16000 -ac 1 ${wavFilePath}`, (error, stdout, stderr) => {
+      if (error) {
+        console.error('Error converting audio file:', error);
+        return reject(error);
+      }
+      resolve(wavFilePath);
+    });
+  });
+}
+
 async function convertAudioToText(audioFilePath) {
   return new Promise((resolve, reject) => {
-    const wavFilePath = audioFilePath.replace(/\.\w+$/, '.wav');
-    // Convert to .wav format using ffmpeg
-    exec(`ffmpeg -i ${audioFilePath} -ar 16000 ${wavFilePath}`, async (error) => {
+    const oggFilePath = audioFilePath;
+    const wavFilePath = oggFilePath.replace(/\.\w+$/, '.wav');
+    convertOggToWav(oggFilePath, wavFilePath).then(async () => {
       if (error) {
         console.error('Error converting audio file:', error);
         return reject(error);
@@ -146,7 +172,7 @@ async function convertAudioToText(audioFilePath) {
         console.error('Error transcribing audio file:', transcriptionError);
         reject(transcriptionError);
       }
-    });
+    }).catch(reject);
   });
 }
 
