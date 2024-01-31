@@ -152,10 +152,6 @@ async function convertAudioToText(audioFilePath) {
     const oggFilePath = audioFilePath;
     const wavFilePath = oggFilePath.replace(/\.\w+$/, '.wav');
     convertOggToWav(oggFilePath, wavFilePath).then(async () => {
-      if (error) {
-        console.error('Error converting audio file:', error);
-        return reject(error);
-      }
       // Transcribe the audio file using whisper-node
       try {
         const transcript = await whisper(wavFilePath);
@@ -169,11 +165,4 @@ async function convertAudioToText(audioFilePath) {
       }
     }).catch(reject);
   });
-}
-
-  // Transcribe the audio file using whisper-node
-  const transcript = await whisper(wavFilePath);
-  // Concatenate the speech segments into a single string
-  const transcribedText = transcript.map(segment => segment.speech).join(' ');
-  return transcribedText;
 }
